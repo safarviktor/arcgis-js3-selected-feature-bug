@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.42/esri/css/esri.css">
+    <script src="https://js.arcgis.com/3.42/"></script>
+    <title></title>
+    <script>
+      require([
+        "esri/map", 
+        "esri/layers/FeatureLayer",
+        "dojo/on",
+        "esri/tasks/query",
+        "esri/symbols/SimpleLineSymbol",
+        "esri/Color"
+      ], 
+      
+      function(Map, FeatureLayer, on, Query, SimpleLineSymbol, Color) { 
+
+        const selectionSimpleLineSymbol = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([255, 0, 0]), 2);
+
+        map = new Map("map", {
+            basemap: "topo-vector",
+            center: [4.9, 60],
+            zoom: 10
+        });
+
+        map.on("click", event => {            
+            map.graphicsLayerIds.forEach(lid => {
+                const currentLayer = map.getLayer(lid);
+                
+                const q = new Query();
+                q.geometry = event.mapPoint;
+                q.returnGeometry = true;
+                q.outSpatialReference = map.spatialReference
+                currentLayer.selectFeatures(q, FeatureLayer.SELECTION_NEW, 
+                    features => {
+                        console.log("selected features:");
+                        console.log(features)
+                    },
+                    err => {
+                        console.log(err);
+                        debugger;
+                    });
+            });
+        })
+
+        map.on("layer-add", event => {
+            event.layer.setSelectionSymbol(selectionSimpleLineSymbol);
+        })
+
+        map.addLayer(new FeatureLayer("https://services.arcgis.com/2JyTvMWQSnM2Vi8q/arcgis/rest/services/viks_polygon_sample/FeatureServer/0")) ;
+        
+
+       });
+    </script>
+    <style>
+      html, body, #map {
+        height: 95%;
+        padding: 0;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body class="claro">
+    <div>Available as recording: https://youtu.be/k8CHvYJ19hw</div>
+    <div id="map"></div>    
+  </body>
+</html>
